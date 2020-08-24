@@ -31,7 +31,7 @@ class Helper:
                   '○本说明只在首次运行软件时出现')
             time.sleep(9)
             self.config.add_section('init')  # 在配置文件中添加初始化模块
-            self.config.set('init', '软件版本', 'v1.1')
+            self.config.set('init', '软件版本', 'v1.2')
             self.config.set('init', 'times', '0')  # 启动次数，初始化为0
             system_para = os.system('cls')         # 清屏处理
             name = input('--->欢迎使用单词助手,我是Allen\n--->我该怎么称呼你呢:')
@@ -45,6 +45,7 @@ class Helper:
             self.config.add_section(f'record-{times}')  # 添加信息保存模块，模块id由init模块确定
             self.config.set(f'record-{times}', '开始学习时间', self.time_to_study)
             self.config.write(f)
+            f.close()
         else:
             f = open(self.info_file, 'r+')
             self.config.read('info.ini')
@@ -58,6 +59,7 @@ class Helper:
             self.config.add_section(f'record-{times}')
             self.config.set(f'record-{times}', '开始学习时间', self.time_to_study)
             self.config.write(f)
+            f.close()
 
     def words_add(self):
         """
@@ -105,6 +107,7 @@ class Helper:
         print('--->保存成功,即将回到主界面...')
         time.sleep(2)
         system_para = os.system('cls')
+        g.close()
 
     def words_test(self):
         """
@@ -227,9 +230,12 @@ class Helper:
                 for i in result:
                     print(i, end='、')
                 time.sleep(3)
+                system_para = os.system('cls')
             elif not result:
                 print(f'--->在词库中未查询到相关单词')
                 time.sleep(2)
+                system_para = os.system('cls')
+        g.close()
 
     def online_query(self):
         """
@@ -252,9 +258,11 @@ class Helper:
                 if rdata['errorCode'] == 0:
                     print(f"--->查询结果:{rdata['translateResult'][0][0]['tgt']}")
                     time.sleep(3)
+                    system_para = os.system('cls')
             else:
                 print('--->查询失败，请检查单词或网络')
                 time.sleep(2)
+                system_para = os.system('cls')
 
     def query_lexicon(self):
         """
@@ -262,7 +270,7 @@ class Helper:
         :return:
         """
         keys = []           # 保存导出的单词
-        count = 0           # 统计单词个数，用于换行处理
+        count = 0           # 计算单词个数，用于换行处理
         self.config.read('info.ini')
         g = open(self.words_file, 'r+')
         data = g.readlines()  # 读取个人词库内容
@@ -271,13 +279,18 @@ class Helper:
         length = len(dict_data)
         for i in range(length):
             keys += eval(dict_data[i]).keys()
-        print('--->您当前词库单词如下:')
-        for j in keys:
-            print(j, end='|')
-            count += 1
-            if count % 10 == 0:
-                print("\n")
-        time.sleep(2)
+        if not keys:
+            print("--->词库暂时为空,赶快建立你的个人词库吧")
+        else:
+            print('--->当前词库单词:')
+            for j in keys:
+                print(j, end='|')
+                count += 1
+                if count % 10 == 0:
+                    print()
+            print('\n\n\n\n\n')
+        time.sleep(3)
+        g.close()
 
     def main_face(self):
         self.config.read('info.ini')
@@ -314,4 +327,3 @@ if __name__ == '__main__':
     obj = Helper()
     while True:
         obj.main_face()
-
