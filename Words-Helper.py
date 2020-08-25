@@ -71,7 +71,7 @@ class Helper:
         day_data = {}  # 保存今日单词和其中文词义
         day_words = input('--->请输入本次测试单词(请分开输入单词):')
         day_words = day_words.strip()  # 除去字符串两边的空白字符
-        day_words = re.split('[,， ]', day_words)  # 根据中英文逗号和空格来分隔用户的输入内容
+        day_words = re.split('[,，;； ]', day_words)  # 根据中英文逗号和空格来分隔用户的输入内容
         g = open(self.words_file, 'r+')
         data = g.readlines()                       # 读取个人词库内容
         trim_data = str(data).replace(r'\n', '')   # 除去换行符
@@ -88,7 +88,7 @@ class Helper:
                 remove.append(i)
             else:
                 meaning = input(f'--->请输入{i}的中文词义:')
-                meaning = re.split('[,， ]', meaning)  # 分隔中文词义，正则对于单个意思的单词也可转化为列表
+                meaning = re.split('[,，;； ]', meaning)  # 分隔中文词义，正则对于单个意思的单词也可转化为列表
                 day_data[i] = meaning
         for i in day_words:
             if i in remove:
@@ -126,22 +126,26 @@ class Helper:
             self.config.read('info.ini')
             times = self.config.getint('init', 'times')
             words_list = eval(self.config.get(f'record-{times}', '新增单词'))  # 使用eval函数，将字符串转字典
+            all_keys = self.config.options(f'record-{times}')
             if times >= 1:
-                last_words = eval(self.config.get(f'record-{times - 1}', '新增单词'))
-                r_rate = self.config.getfloat(f'record-{times - 1}', '本次测试正确率')
-                words_weak = self.config.get(f'record-{times - 1}', '本次待加强单词')
                 print('--->上一次的学习情况如下:')
-                print('--->学习的单词:', end=' ')
-                for i in list(last_words.keys()):
-                    print(i, end='|')
-                print(f'\n--->测试正确率: {r_rate}')
-                print('--->待加强单词:', end=' ')
-                if not eval(words_weak):
-                    print('无')
+                if '新增单词' or '本次测试正确率' or '本次待加强单词' not in all_keys:
+                    print('未检索到上一次的测试记录，请检查配置文件')
                 else:
-                    for j in words_weak:
-                        print(j, end='|')
-                print("\n")
+                    last_words = eval(self.config.get(f'record-{times - 1}', '新增单词'))
+                    r_rate = self.config.getfloat(f'record-{times - 1}', '本次测试正确率')
+                    words_weak = self.config.get(f'record-{times - 1}', '本次待加强单词')
+                    print('学习的单词:', end=' ')
+                    for i in list(last_words.keys()):
+                        print(i, end='|')
+                    print(f'\n测试正确率: {r_rate}')
+                    if not eval(words_weak):
+                        print('上次无待加强记忆单词')
+                    else:
+                        print('待加强单词:', end=' ')
+                        for j in words_weak:
+                            print(j, end='|')
+                    print("\n")
         except SyntaxError:
             print('--->暂时没有测试单词哦，请先添加本次测试单词')
             time.sleep(2)
@@ -160,7 +164,7 @@ class Helper:
                 count = 0  # 统计用户输入中文词义的正确个数
                 right_length = len(words_list.get(i))
                 mean = input(f'--->{i}的中文词义有:')
-                mean = re.split('[,， ]', mean)
+                mean = re.split('[,，;； ]', mean)
                 for j in words_list.get(i):  # 这里的双层循环是验证用户输入的词义的正确个数
                     for k in mean:
                         if k == j:
@@ -168,19 +172,19 @@ class Helper:
                 if 0.4 < (count / right_length) <= 0.6:
                     print("--->记得还不错")
                     lr += 0.5
-                    time.sleep(2)
+                    time.sleep(1)
                 elif 0.6 < (count / right_length) <= 0.8:
                     print('--->棒棒哒')
                     lr += 0.7
-                    time.sleep(2)
+                    time.sleep(1)
                 elif 0.8 < (count / right_length) <= 1:
                     print("--->完美!")
                     lr += 1
-                    time.sleep(2)
+                    time.sleep(1)
                 elif (count / right_length) <= 0.4:
                     print("--->还需要加强记忆哦")
                     weak_words.append(i)
-                    time.sleep(2)
+                    time.sleep(1)
             print("--->测试完成，即将回到主界面...")
             time.sleep(2)
             system_para = os.system('cls')
@@ -219,16 +223,20 @@ class Helper:
                     print(f'--->查询成功, {query}在词库中的意思为:', end=' ')
                     for j in new_dict.get(i):
                         print(j, end='、')
-            time.sleep(3)
+                    print('\n')
+                    time.sleep(3)
+            system_para = os.system('cls')
             if not flag:
                 print(f"--->词库中暂时还没有收录单词{query}哦")
                 time.sleep(2)
+                system_para = os.system('cls')
         elif not y:
             result = [k for (k, v) in new_dict.items() if query in v]
             if result:
                 print(f'--->查询到具有"{query}"意思的单词有:', end=' ')
                 for i in result:
                     print(i, end='、')
+                print('\n')
                 time.sleep(3)
                 system_para = os.system('cls')
             elif not result:
@@ -287,16 +295,17 @@ class Helper:
                 print(j, end='|')
                 count += 1
                 if count % 10 == 0:
-                    print()
-            print('\n\n\n\n\n')
-        time.sleep(3)
+                    print('\n')
+            print('\n')
+        time.sleep(count)            # 每个单词分配一秒
+        system_para = os.system('cls')
         g.close()
 
     def main_face(self):
         self.config.read('info.ini')
         username = self.config.get('init', 'username')
         total = self.config.get('init', '词库量')
-        print(f'用户: {username}\n个人词库总量: {total}\n时间: {self.time_to_study}')
+        print(f'===>用户: {username}\n===>个人词库总量: {total}\n===>时间: {self.time_to_study}')
         print('>>>>>1、输入测试单词<<<<<\n' +
               '>>>>>2、学习测试单词<<<<<\n' +
               '>>>>>3、本地单词查询<<<<<\n' +
