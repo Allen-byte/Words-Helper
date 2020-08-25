@@ -31,7 +31,7 @@ class Helper:
                   '○本说明只在首次运行软件时出现')
             time.sleep(9)
             self.config.add_section('init')  # 在配置文件中添加初始化模块
-            self.config.set('init', '软件版本', 'v1.2')
+            self.config.set('init', '软件版本', 'v1.3')
             self.config.set('init', 'times', '0')  # 启动次数，初始化为0
             system_para = os.system('cls')         # 清屏处理
             name = input('--->欢迎使用单词助手,我是Allen\n--->我该怎么称呼你呢:')
